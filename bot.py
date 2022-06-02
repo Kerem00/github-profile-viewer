@@ -19,6 +19,7 @@ import requests
 import keyring
 import discord
 from discord import app_commands
+from datetime import datetime
 
 BOT_TOKEN = keyring.get_password("bot", "token")
 APP_ID = keyring.get_password("app", "id")
@@ -71,6 +72,7 @@ async def profile(interaction: discord.Interaction, username: str):
         embed.add_field(name="Repos", value=str(info["user"]["public_repos"]))
         embed.add_field(name="Followers", value=str(info["user"]["followers"]))
         embed.add_field(name="Following", value=str(info["user"]["following"]))
+        embed.set_footer(text=datetime.strptime(info["user"]["created_at"], "%Y-%m-%dT%H:%M:%SZ").strftime('Created on %d %b, %Y.'))
         await interaction.response.send_message(embed=embed)
     else:
         await interaction.response.send_message(content=f"'{username}' not found.")
