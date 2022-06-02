@@ -58,7 +58,7 @@ async def on_ready():
     await client.change_presence(activity=discord.Game(name="GitHub"))
 
 @client.tree.command()
-@app_commands.describe(username="GitHub  kullanıcı adı.")
+@app_commands.describe(username="GitHub  username.")
 async def profile(interaction: discord.Interaction, username: str):
     """Show GitHub profile by username."""
     if not re.match(r"^\w+$", username):
