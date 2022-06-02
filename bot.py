@@ -56,7 +56,7 @@ async def on_ready():
     msg_on_login = f"Logged in as {client.user} (ID: {client.user.id})"
     print(msg_on_login)
     print("_" * len(msg_on_login))
-    await client.change_presence(activity=discord.Game(name="GitHub"))
+    await client.change_presence(activity=discord.Game(name="GitHub Profile Viewer"))
 
 @client.tree.command()
 @app_commands.describe(username="GitHub username.")
