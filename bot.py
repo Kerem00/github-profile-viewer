@@ -36,7 +36,7 @@ def search_github_user(username):
         user.raise_for_status()
         user = user.json()
         info["user"] = user
-        info["repos"] = requests.get(user["repos_url"], headers=headers).json()
+        info["repos"] = requests.get(user["repos_url"], headers=headers, params=params).json()
         info["followers"] = requests.get(user["followers_url"], headers=headers, params=params).json()
         info["following"] = requests.get(user["following_url"][0:-13], headers=headers, params=params).json()
         return info
