@@ -24,6 +24,7 @@ from datetime import datetime
 BOT_TOKEN = keyring.get_password("bot", "token")
 APP_ID = keyring.get_password("app", "id")
 headers = {"User-Agent": "GitHub Profile Viewer", "Authorization": f"token {keyring.get_password('github', 'token')}"}
+params = {"per_page": 10}
 
 def search_github_user(username):
     if not re.match(r"^\w+$", username):
@@ -35,8 +36,8 @@ def search_github_user(username):
         user = user.json()
         info["user"] = user
         info["repos"] = requests.get(user["repos_url"], headers=headers).json()
-        info["followers"] = requests.get(user["followers_url"], headers=headers).json()
-        info["following"] = requests.get(user["following_url"][0:-13], headers=headers).json()
+        info["followers"] = requests.get(user["followers_url"], headers=headers, params=params).json()
+        info["following"] = requests.get(user["following_url"][0:-13], headers=headers, params=params).json()
         return info
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
