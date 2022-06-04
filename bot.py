@@ -23,6 +23,7 @@ from datetime import datetime
 
 BOT_TOKEN = keyring.get_password("bot", "token")
 APP_ID = keyring.get_password("app", "id")
+
 headers = {"User-Agent": "GitHub Profile Viewer", "Authorization": f"token {keyring.get_password('github', 'token')}"}
 params = {"per_page": 10}
 
