@@ -15,9 +15,10 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
+import copy
+import math
 import requests
 import keyring
-import copy
 import discord
 from discord import app_commands
 from datetime import datetime
@@ -26,24 +27,25 @@ BOT_TOKEN = keyring.get_password("bot", "token")
 APP_ID = keyring.get_password("app", "id")
 
 headers = {"User-Agent": "GitHub Profile Viewer", "Authorization": f"token {keyring.get_password('github', 'token')}"}
-params = {"per_page": 10}
+per_page = 5
 
 def search_github_user(username):
     if not re.match(r"^\w+$", username):
         return
     try:
-        info = {}
-        user = requests.get(f"https://api.github.com/users/{username}", headers=headers)
-        user.raise_for_status()
-        user = user.json()
-        info["user"] = user
-        info["repos"] = requests.get(user["repos_url"], headers=headers, params=params).json()
-        info["followers"] = requests.get(user["followers_url"], headers=headers, params=params).json()
-        info["following"] = requests.get(user["following_url"][0:-13], headers=headers, params=params).json()
-        return info
+        info = requests.get(f"https://api.github.com/users/{username}", headers=headers)
+        info.raise_for_status()
+        return info.json()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
             return
+
+def get_lists(url, page):
+    return requests.get(url, headers=headers, params={"per_page": per_page, "page": page}).json()
+
+def add_fields(embed, url, page):
+    for i in get_lists(url, page):
+        embed.add_field(name=f"{i['name']} {'(Fork)'if i['fork'] == True else ''}" if i.get("name") is not None else i["login"], value=i["description"] if i.get("description") is not None else f"[Click]({i['html_url']})", inline=False)
 
 class Client(discord.Client):
     def __init__(self, *, intents: discord.Intents, application_id: int):
@@ -59,19 +61,31 @@ class ViewButtons(discord.ui.View):
         self.default_embed = default_embed
         self.interaction_message = interaction_message
         self.info = info
-        self.add_item(ButtonProfile())
+        self.add_item(ButtonProfilePlaceholder())
         self.add_item(ButtonTemplate("Repos"))
         self.add_item(ButtonTemplate("Followers"))
         self.add_item(ButtonTemplate("Following"))
 
-class ButtonProfile(discord.ui.Button):
+class ViewPages(discord.ui.View):
+    def __init__(self, default_embed, default_view):
+        super().__init__()
+        self.default_embed = default_embed
+        self.default_view = default_view
+        self.page = 1
+        self.max_page = math.ceil(default_view.info[default_embed.title.lower().replace("repos", "public_repos")] / per_page)
+        self.add_item(ButtonNavigation("Previous"))
+        self.add_item(ButtonPageNumber())
+        self.add_item(ButtonNavigation("Next"))
+        self.add_item(ButtonGoBack())
+
+class ButtonGoBack(discord.ui.Button):
     def __init__(self):
-        super().__init__(style=discord.ButtonStyle.primary, label="Profile")
+        super().__init__(style=discord.ButtonStyle.primary, label="Go Back")
 
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
-        view: ViewButtons = self.view
-        await view.interaction_message.edit(embed=view.default_embed)
+        view: ViewPages = self.view
+        await view.default_view.interaction_message.edit(embed=view.default_view.default_embed, view=view.default_view)
         await interaction.response.defer()
 
 class ButtonTemplate(discord.ui.Button):
@@ -82,11 +96,48 @@ class ButtonTemplate(discord.ui.Button):
         assert self.view is not None
         view: ViewButtons = self.view
         embed = copy.deepcopy(view.default_embed)
+        embed.description = None
         embed.title = self.label
         embed.clear_fields()
-        for i in view.info[self.label.lower()]:
-            embed.add_field(name=i["name"] if i.get("name") is not None else i["login"], value=i["description"] if i.get("description") is not None else f"[Click]({i['html_url']})", inline=False)
-        await view.interaction_message.edit(embed=embed)
+        add_fields(embed, view.info[f"{self.label.lower()}_url"].replace("{/other_user}", ""), 1)
+        await view.interaction_message.edit(embed=embed, view=ViewPages(embed, view))
+        await interaction.response.defer()
+
+class ButtonProfilePlaceholder(discord.ui.Button):
+    def __init__(self):
+        super().__init__(style=discord.ButtonStyle.primary, label="Profile")
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+class ButtonPageNumber(discord.ui.Button):
+    def __init__(self):
+        super().__init__(style=discord.ButtonStyle.primary, label="1")
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+class ButtonNavigation(discord.ui.Button):
+    def __init__(self, btnlabel: str):
+        super().__init__(style=discord.ButtonStyle.primary, label=btnlabel)
+
+    async def callback(self, interaction: discord.Interaction):
+        assert self.view is not None
+        view: ViewPages = self.view
+
+        if self.label == "Next" and view.page < view.max_page:
+            view.page += 1
+            view.default_embed.clear_fields()
+            add_fields(view.default_embed, view.default_view.info[f"{view.default_embed.title.lower()}_url"].replace("{/other_user}", ""), view.page)
+        elif self.label == "Previous" and view.page > 1:
+            view.page -= 1
+            view.default_embed.clear_fields()
+            add_fields(view.default_embed, view.default_view.info[f"{view.default_embed.title.lower()}_url"].replace("{/other_user}", ""), view.page)
+        else:
+            await interaction.response.defer()
+            return
+        view.children[1].label = str(view.page)
+        await view.default_view.interaction_message.edit(embed=view.default_embed, view=view)
         await interaction.response.defer()
 
 client = Client(intents=discord.Intents.default(), application_id=APP_ID)
@@ -108,12 +159,12 @@ async def profile(interaction: discord.Interaction, username: str):
         return
     info = search_github_user(username)
     if info is not None:
-        embed = discord.Embed(title=info["user"]["name"], description=info["user"]["bio"], color=0x2f3136)
-        embed.set_author(name=info["user"]["login"], icon_url=info["user"]["avatar_url"], url=info["user"]["html_url"])
-        embed.add_field(name="Repos", value=str(info["user"]["public_repos"]))
-        embed.add_field(name="Followers", value=str(info["user"]["followers"]))
-        embed.add_field(name="Following", value=str(info["user"]["following"]))
-        embed.set_footer(text=datetime.strptime(info["user"]["created_at"], "%Y-%m-%dT%H:%M:%SZ").strftime('Created on %d %b, %Y.'))
+        embed = discord.Embed(title=info["name"], description=info["bio"], color=0x2f3136)
+        embed.set_author(name=info["login"], icon_url=info["avatar_url"], url=info["html_url"])
+        embed.add_field(name="Repos", value=str(info["public_repos"]))
+        embed.add_field(name="Followers", value=str(info["followers"]))
+        embed.add_field(name="Following", value=str(info["following"]))
+        embed.set_footer(text=datetime.strptime(info["created_at"], "%Y-%m-%dT%H:%M:%SZ").strftime('Created on %d %b, %Y.'))
         await interaction.edit_original_message(embed=embed, view=ViewButtons(embed, await interaction.original_message(), info))
     else:
         await interaction.edit_original_message(content=f"'{username}' not found.")
