@@ -17,6 +17,7 @@
 import re
 import requests
 import keyring
+import copy
 import discord
 from discord import app_commands
 from datetime import datetime
@@ -81,11 +82,11 @@ class ButtonTemplate(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
         view: ViewButtons = self.view
-        embed = discord.Embed(title=self.btnlabel, color=0x2f3136)
-        embed.set_author(name=view.info["user"]["login"], icon_url=view.info["user"]["avatar_url"], url=view.info["user"]["html_url"])
+        embed = copy.deepcopy(view.default_embed)
+        embed.title = self.btnlabel
+        embed.clear_fields()
         for i in view.info[self.btnlabel.lower()]:
             embed.add_field(name=i["name"] if i.get("name") is not None else i["login"], value=i["description"] if i.get("description") is not None else f"[Click]({i['html_url']})", inline=False)
-        embed.set_footer(text=datetime.strptime(view.info["user"]["created_at"], "%Y-%m-%dT%H:%M:%SZ").strftime('Created on %d %b, %Y.'))
         await view.interaction_message.edit(embed=embed)
         await interaction.response.defer()
 
