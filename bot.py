@@ -96,8 +96,8 @@ class ButtonTemplate(discord.ui.Button):
         assert self.view is not None
         view: ViewButtons = self.view
         embed = copy.deepcopy(view.default_embed)
-        embed.description = None
         embed.title = self.label
+        embed.description = None
         embed.clear_fields()
         add_fields(embed, view.info[f"{self.label.lower()}_url"].replace("{/other_user}", ""), 1)
         await view.interaction_message.edit(embed=embed, view=ViewPages(embed, view))
