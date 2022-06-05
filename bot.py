@@ -16,7 +16,6 @@
 
 import re
 import copy
-import math
 import requests
 import keyring
 import discord
@@ -72,10 +71,10 @@ class ViewPages(discord.ui.View):
         self.default_embed = default_embed
         self.default_view = default_view
         self.page = 1
-        self.max_page = math.ceil(default_view.info[default_embed.title.lower().replace("repos", "public_repos")] / per_page)
-        self.add_item(ButtonNavigation("Previous"))
+        self.max_page = int(default_view.info[default_embed.title.lower().replace("repos", "public_repos")] / per_page) + 1
+        self.add_item(ButtonNavigation("Previous", True))
         self.add_item(ButtonPageNumber())
-        self.add_item(ButtonNavigation("Next"))
+        self.add_item(ButtonNavigation("Next", self.max_page == 1))
         self.add_item(ButtonGoBack())
 
 class ButtonGoBack(discord.ui.Button):
@@ -118,8 +117,8 @@ class ButtonPageNumber(discord.ui.Button):
         await interaction.response.defer()
 
 class ButtonNavigation(discord.ui.Button):
-    def __init__(self, btnlabel: str):
-        super().__init__(style=discord.ButtonStyle.primary, label=btnlabel)
+    def __init__(self, btnlabel: str, btndisabled: bool):
+        super().__init__(style=discord.ButtonStyle.primary, label=btnlabel, disabled=btndisabled)
 
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
@@ -133,9 +132,9 @@ class ButtonNavigation(discord.ui.Button):
             view.page -= 1
             view.default_embed.clear_fields()
             add_fields(view.default_embed, view.default_view.info[f"{view.default_embed.title.lower()}_url"].replace("{/other_user}", ""), view.page)
-        else:
-            await interaction.response.defer()
-            return
+        
+        view.children[0].disabled = view.page == 1
+        view.children[2].disabled = view.page == view.max_page
         view.children[1].label = str(view.page)
         await view.default_view.interaction_message.edit(embed=view.default_embed, view=view)
         await interaction.response.defer()
