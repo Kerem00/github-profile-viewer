@@ -77,15 +77,14 @@ class ButtonProfile(discord.ui.Button):
 class ButtonTemplate(discord.ui.Button):
     def __init__(self, btnlabel: str):
         super().__init__(style=discord.ButtonStyle.primary, label=btnlabel)
-        self.btnlabel = btnlabel
 
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
         view: ViewButtons = self.view
         embed = copy.deepcopy(view.default_embed)
-        embed.title = self.btnlabel
+        embed.title = self.label
         embed.clear_fields()
-        for i in view.info[self.btnlabel.lower()]:
+        for i in view.info[self.label.lower()]:
             embed.add_field(name=i["name"] if i.get("name") is not None else i["login"], value=i["description"] if i.get("description") is not None else f"[Click]({i['html_url']})", inline=False)
         await view.interaction_message.edit(embed=embed)
         await interaction.response.defer()
