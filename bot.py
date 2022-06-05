@@ -44,7 +44,7 @@ def get_lists(url, page):
 
 def add_fields(embed, url, page):
     for i in get_lists(url, page):
-        embed.add_field(name=f"{i['name']} {'(Fork)'if i['fork'] == True else ''}" if i.get("name") is not None else i["login"], value=i["description"] if i.get("description") is not None else f"[Click]({i['html_url']})", inline=False)
+        embed.add_field(name=f"{i['name']} {'(Fork)' if i['fork'] == True else ''}" if i.get("name") is not None else i["login"], value=i["description"] if i.get("description") is not None else f"[Click]({i['html_url']})", inline=False)
 
 class Client(discord.Client):
     def __init__(self, *, intents: discord.Intents, application_id: int):
