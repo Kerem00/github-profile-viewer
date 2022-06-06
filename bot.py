@@ -61,7 +61,7 @@ class ViewButtons(discord.ui.View):
         self.default_embed = default_embed
         self.interaction_message = interaction_message
         self.info = info
-        self.add_item(ButtonProfilePlaceholder())
+        self.add_item(ButtonPlaceholder("Profile"))
         self.add_item(ButtonTemplate("Repos"))
         self.add_item(ButtonTemplate("Followers"))
         self.add_item(ButtonTemplate("Following"))
@@ -74,7 +74,7 @@ class ViewPages(discord.ui.View):
         self.page = 1
         self.max_page = math.ceil(default_view.info[default_embed.title.lower().replace("repos", "public_repos")] / per_page)
         self.add_item(ButtonNavigation("Previous", True))
-        self.add_item(ButtonPageNumber())
+        self.add_item(ButtonPlaceholder("1"))
         self.add_item(ButtonNavigation("Next", self.max_page <= 1))
         self.add_item(ButtonGoBack())
 
@@ -103,16 +103,9 @@ class ButtonTemplate(discord.ui.Button):
         await view.interaction_message.edit(embed=embed, view=ViewPages(embed, view))
         await interaction.response.defer()
 
-class ButtonProfilePlaceholder(discord.ui.Button):
-    def __init__(self):
-        super().__init__(style=discord.ButtonStyle.primary, label="Profile")
-
-    async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-
-class ButtonPageNumber(discord.ui.Button):
-    def __init__(self):
-        super().__init__(style=discord.ButtonStyle.primary, label="1")
+class ButtonPlaceholder(discord.ui.Button):
+    def __init__(self, btnlabel: str):
+        super().__init__(style=discord.ButtonStyle.primary, label=btnlabel)
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
