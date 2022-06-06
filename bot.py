@@ -16,6 +16,7 @@
 
 import re
 import copy
+import math
 import requests
 import keyring
 import discord
@@ -71,10 +72,10 @@ class ViewPages(discord.ui.View):
         self.default_embed = default_embed
         self.default_view = default_view
         self.page = 1
-        self.max_page = int(default_view.info[default_embed.title.lower().replace("repos", "public_repos")] / per_page) + 1
+        self.max_page = math.ceil(default_view.info[default_embed.title.lower().replace("repos", "public_repos")] / per_page)
         self.add_item(ButtonNavigation("Previous", True))
         self.add_item(ButtonPageNumber())
-        self.add_item(ButtonNavigation("Next", self.max_page == 1))
+        self.add_item(ButtonNavigation("Next", self.max_page <= 1))
         self.add_item(ButtonGoBack())
 
 class ButtonGoBack(discord.ui.Button):
