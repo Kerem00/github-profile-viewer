@@ -44,6 +44,7 @@ def get_lists(url, page):
     return requests.get(url, headers=headers, params={"per_page": per_page, "page": page}).json()
 
 def add_fields(embed, url, page):
+    embed.clear_fields()
     for i in get_lists(url, page):
         embed.add_field(name=f"{i['name']} {'(Fork)' if i['fork'] == True else ''}" if i.get("name") is not None else i["login"], value=i["description"] if i.get("description") is not None else f"[Click]({i['html_url']})", inline=False)
 
@@ -98,7 +99,6 @@ class ButtonTemplate(discord.ui.Button):
         embed = copy.deepcopy(view.default_embed)
         embed.title = self.label
         embed.description = None
-        embed.clear_fields()
         add_fields(embed, view.info[f"{self.label.lower()}_url"].replace("{/other_user}", ""), 1)
         await view.interaction_message.edit(embed=embed, view=ViewPages(embed, view))
         await interaction.response.defer()
@@ -120,13 +120,10 @@ class ButtonNavigation(discord.ui.Button):
 
         if self.label == "Next" and view.page < view.max_page:
             view.page += 1
-            view.default_embed.clear_fields()
-            add_fields(view.default_embed, view.default_view.info[f"{view.default_embed.title.lower()}_url"].replace("{/other_user}", ""), view.page)
         elif self.label == "Previous" and view.page > 1:
             view.page -= 1
-            view.default_embed.clear_fields()
-            add_fields(view.default_embed, view.default_view.info[f"{view.default_embed.title.lower()}_url"].replace("{/other_user}", ""), view.page)
         
+        add_fields(view.default_embed, view.default_view.info[f"{view.default_embed.title.lower()}_url"].replace("{/other_user}", ""), view.page)
         view.children[0].disabled = view.page == 1
         view.children[2].disabled = view.page == view.max_page
         view.children[1].label = str(view.page)
