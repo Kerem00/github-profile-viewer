@@ -5,6 +5,9 @@ Docker commands:
 ```bash
 docker build -t github-profile-viewer-docker .
 docker run -d --name github-profile-viewer github-profile-viewer-docker
+
+# For logs
+docker logs github-profile-viewer
 ```
 
 ## TODO:
