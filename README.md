@@ -4,7 +4,7 @@ Discord bot for viewing GitHub profiles using slash commands.
 Docker commands:
 ```bash
 docker build -t github-profile-viewer-docker .
-docker run -dt --name github-profile-viewer github-profile-viewer-docker
+docker run -dt --restart always --name github-profile-viewer github-profile-viewer-docker
 
 # For logs
 docker logs github-profile-viewer
