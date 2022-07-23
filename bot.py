@@ -77,9 +77,9 @@ class ViewPages(discord.ui.View):
         self.default_view = default_view
         self.page = 1
         self.max_page = math.ceil(default_view.info[default_embed.title.lower().replace("repos", "public_repos")] / per_page)
-        self.add_item(ButtonNavigation("Previous", True))
+        self.add_item(ButtonNavigation("Previous", True, False))
         self.add_item(ButtonPageNumber())
-        self.add_item(ButtonNavigation("Next", self.max_page <= 1))
+        self.add_item(ButtonNavigation("Next", self.max_page <= 1, True))
         self.add_item(ButtonGoBack())
 
 class ButtonClose(discord.ui.Button):
@@ -131,9 +131,9 @@ class ButtonNavigation(discord.ui.Button):
         assert self.view is not None
         view: ViewPages = self.view
 
-        if self.label == "Next" and view.page < view.max_page:
+        if self.btnforward:
             view.page += 1
-        elif self.label == "Previous" and view.page > 1:
+        else:
             view.page -= 1
         
         add_fields(view.default_embed, view.default_view.info[f"{view.default_embed.title.lower()}_url"].replace("{/other_user}", ""), view.page)
