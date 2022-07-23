@@ -124,8 +124,9 @@ class ButtonPageNumber(discord.ui.Button):
         await interaction.response.defer()
 
 class ButtonNavigation(discord.ui.Button):
-    def __init__(self, btnlabel: str, btndisabled: bool):
+    def __init__(self, btnlabel: str, btndisabled: bool, btnforward: bool):
         super().__init__(style=discord.ButtonStyle.primary, label=btnlabel, disabled=btndisabled)
+        self.btnforward = btnforward
 
     async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
