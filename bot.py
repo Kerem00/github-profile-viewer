@@ -159,7 +159,7 @@ async def profile(interaction: discord.Interaction, username: str):
     """Show GitHub profile by username."""
     await interaction.response.defer()
     if not re.match(r"^[\w-]+$", username):
-        await interaction.edit_original_message(content="Specified username is invalid.")
+        await interaction.edit_original_response(content="Specified username is invalid.")
         return
     info = search_github_user(username)
     if info is not None:
@@ -169,8 +169,8 @@ async def profile(interaction: discord.Interaction, username: str):
         embed.add_field(name="Followers", value=str(info["followers"]))
         embed.add_field(name="Following", value=str(info["following"]))
         embed.set_footer(text=datetime.strptime(info["created_at"], "%Y-%m-%dT%H:%M:%SZ").strftime('Created on %d %b, %Y.'))
-        await interaction.edit_original_message(embed=embed, view=ViewButtons(embed, await interaction.original_message(), info))
+        await interaction.edit_original_response(embed=embed, view=ViewButtons(embed, await interaction.original_response(), info))
     else:
-        await interaction.edit_original_message(content=f"'{username}' not found.")
+        await interaction.edit_original_response(content=f"'{username}' not found.")
 
 client.run(BOT_TOKEN)
