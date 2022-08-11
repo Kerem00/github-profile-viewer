@@ -33,7 +33,7 @@ headers = {"User-Agent": "GitHub Profile Viewer", "Authorization": f"token {os.g
 per_page = 5
 
 def search_github_user(username):
-    if not re.match(r"^\w+$", username):
+    if not re.match(r"^[\w-]+$", username):
         return
     try:
         info = requests.get(f"https://api.github.com/users/{username}", headers=headers)
@@ -158,7 +158,7 @@ async def on_ready():
 async def profile(interaction: discord.Interaction, username: str):
     """Show GitHub profile by username."""
     await interaction.response.defer()
-    if not re.match(r"^\w+$", username):
+    if not re.match(r"^[\w-]+$", username):
         await interaction.edit_original_message(content="Specified username is invalid.")
         return
     info = search_github_user(username)
