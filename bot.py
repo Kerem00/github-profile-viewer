@@ -14,19 +14,22 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
 import re
 import copy
 import math
 import requests
-import keyring
 import discord
 from discord import app_commands
 from datetime import datetime
+from dotenv import load_dotenv
 
-BOT_TOKEN = keyring.get_password("bot", "token")
-APP_ID = keyring.get_password("app", "id")
+load_dotenv()
 
-headers = {"User-Agent": "GitHub Profile Viewer", "Authorization": f"token {keyring.get_password('github', 'token')}"}
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+APP_ID = int(os.getenv("APP_ID"))
+
+headers = {"User-Agent": "GitHub Profile Viewer", "Authorization": f"token {os.getenv('GITHUB_TOKEN')}"}
 per_page = 5
 
 def search_github_user(username):
