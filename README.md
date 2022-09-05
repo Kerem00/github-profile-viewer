@@ -1,5 +1,5 @@
 # GitHub Profile Viewer
-Discord bot for viewing GitHub profiles using slash commands.
+Discord bot for viewing GitHub profiles by slash commands.
 
 ## Installation
 ```bash
