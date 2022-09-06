@@ -12,4 +12,5 @@ docker logs github-profile-viewer
 ```
 
 ## TODO:
+* It needs a cache like Redis.
 * Some adjustments will be made.
