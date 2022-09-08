@@ -18,11 +18,15 @@ import os
 import re
 import copy
 import math
+import json
+import redis
 import requests
 import discord
 from discord import app_commands
 from datetime import datetime
 from dotenv import load_dotenv
+
+r = redis.Redis(host="redis", port=6379)
 
 load_dotenv()
 
@@ -36,8 +40,11 @@ def search_github_user(username):
     if not re.match(r"^[\w-]+$", username):
         return
     try:
+        if r.get(username.lower()) is not None:
+            return json.loads(r.get(username.lower()))
         info = requests.get(f"https://api.github.com/users/{username}", headers=headers)
         info.raise_for_status()
+        r.set(username.lower(), info.text, 300)
         return info.json()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
