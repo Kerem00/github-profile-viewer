@@ -51,7 +51,11 @@ def search_github_user(username):
             return
 
 def get_lists(url, page):
-    return requests.get(url, headers=headers, params={"per_page": per_page, "page": page}).json()
+    if r.get(f"{url}-{page}") is not None:
+        return json.loads(r.get(f"{url}-{page}"))
+    items = requests.get(url, headers=headers, params={"per_page": per_page, "page": page})
+    r.set(f"{url}-{page}", items.text, 300)
+    return items.json()
 
 def add_fields(embed, url, page):
     embed.clear_fields()
