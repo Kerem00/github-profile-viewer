@@ -7,5 +7,4 @@ docker compose up -d
 ```
 
 ## TODO:
-* It needs a cache like Redis.
 * Some adjustments will be made.
