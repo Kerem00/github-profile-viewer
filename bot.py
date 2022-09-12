@@ -44,7 +44,7 @@ def search_github_user(username):
             return json.loads(r.get(username.lower()))
         info = requests.get(f"https://api.github.com/users/{username}", headers=headers)
         info.raise_for_status()
-        r.set(username.lower(), info.text, 300)
+        r.set(username.lower(), info.text, 3600)
         return info.json()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
@@ -54,7 +54,7 @@ def get_lists(url, page):
     if r.get(f"{url}-{page}") is not None:
         return json.loads(r.get(f"{url}-{page}"))
     items = requests.get(url, headers=headers, params={"per_page": per_page, "page": page})
-    r.set(f"{url}-{page}", items.text, 300)
+    r.set(f"{url}-{page}", items.text, 3600)
     return items.json()
 
 def add_fields(embed, url, page):
