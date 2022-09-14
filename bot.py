@@ -33,7 +33,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 APP_ID = int(os.getenv("APP_ID"))
 
-headers = {"User-Agent": "GitHub Profile Viewer", "Authorization": f"token {os.getenv('GITHUB_TOKEN')}"}
+headers = {"User-Agent": "GitHub Profile Viewer", "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}"}
 per_page = 5
 
 def search_github_user(username):
