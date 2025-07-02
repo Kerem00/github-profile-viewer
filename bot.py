@@ -32,6 +32,7 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 APP_ID = int(os.getenv("APP_ID"))
+EXPIRE_SECONDS = int(os.getenv("EXPIRE_SECONDS"))
 
 headers = {"User-Agent": "GitHub Profile Viewer", "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}"}
 per_page = 5
@@ -41,10 +42,11 @@ def search_github_user(username):
         return
     try:
         if r.get(username.lower()) is not None:
+            r.expire(username.lower(), EXPIRE_SECONDS)
             return json.loads(r.get(username.lower()))
         info = requests.get(f"https://api.github.com/users/{username}", headers=headers)
         info.raise_for_status()
-        r.set(username.lower(), info.text, 3600)
+        r.set(username.lower(), info.text, EXPIRE_SECONDS)
         return info.json()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
@@ -52,9 +54,10 @@ def search_github_user(username):
 
 def get_lists(url, page):
     if r.get(f"{url}-{page}") is not None:
+        r.expire(f"{url}-{page}", EXPIRE_SECONDS)
         return json.loads(r.get(f"{url}-{page}"))
     items = requests.get(url, headers=headers, params={"per_page": per_page, "page": page})
-    r.set(f"{url}-{page}", items.text, 3600)
+    r.set(f"{url}-{page}", items.text, EXPIRE_SECONDS)
     return items.json()
 
 def add_fields(embed, url, page):
