@@ -177,7 +177,7 @@ async def profile(interaction: discord.Interaction, username: str):
         return
     info = search_github_user(username)
     if info is not None:
-        embed = discord.Embed(title=info["name"], description=info["bio"], color=0x1a1a1e)
+        embed = discord.Embed(title=info["name"], description=info["bio"], color=0x242429)
         embed.set_author(name=info["login"], icon_url=info["avatar_url"], url=info["html_url"])
         embed.add_field(name="Repos", value=str(info["public_repos"]))
         embed.add_field(name="Followers", value=str(info["followers"]))
