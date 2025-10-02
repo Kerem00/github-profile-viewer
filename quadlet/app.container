@@ -1,0 +1,13 @@
+[Unit]
+Description=App Container
+Requires=redis.service
+After=redis.service
+
+[Container]
+Pod=githubprofileviewer.pod
+Image=localhost/github-profile-viewer_app:latest
+ContainerName=app
+AutoUpdate=registry
+
+[Install]
+WantedBy=default.target

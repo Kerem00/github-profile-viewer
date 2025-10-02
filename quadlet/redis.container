@@ -1,0 +1,11 @@
+[Unit]
+Description=Redis Container
+
+[Container]
+Pod=githubprofileviewer.pod
+Image=docker.io/library/redis:alpine
+ContainerName=redis
+AutoUpdate=registry
+
+[Install]
+WantedBy=default.target
