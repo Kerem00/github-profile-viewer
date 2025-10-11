@@ -5,6 +5,7 @@ Description=Redis Container
 Pod=githubprofileviewer.pod
 Image=docker.io/library/redis:alpine
 ContainerName=redis
+Volume=redis-data:/data:Z
 AutoUpdate=registry
 
 [Install]
