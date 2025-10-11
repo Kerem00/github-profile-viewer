@@ -1,3 +1,2 @@
 [Pod]
-Network=gpv
 PodName=githubprofileviewer
